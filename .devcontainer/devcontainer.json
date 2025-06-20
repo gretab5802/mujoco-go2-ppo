@@ -1,0 +1,14 @@
+{
+  "name": "Go2 PPO",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "runArgs": [
+    "--env", "DISPLAY",
+    "--volume", "/tmp/.X11-unix:/tmp/.X11-unix"
+  ],
+  "containerEnv": {
+    "DISPLAY": ":0"
+  },  
+  "remoteUser": "root"
+}
