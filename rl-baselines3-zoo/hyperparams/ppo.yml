@@ -190,7 +190,7 @@ UnitreeGo2-v0:
   n_epochs: 20
   n_steps: 512
   n_timesteps: 1000000.0
-  normalize: "{'norm_obs': False, 'norm_reward': False}"
+  normalize: true
   policy: 'MlpPolicy'
   policy_kwargs: "dict(log_std_init=-2,
                       ortho_init=False,

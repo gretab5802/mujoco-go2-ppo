@@ -223,7 +223,7 @@ def enjoy() -> None:  # noqa: C901
         generator = tqdm(generator)
 
     try:
-        for _ in generator:
+        while True:
             action, lstm_states = model.predict(
                 obs,  # type: ignore[arg-type]
                 state=lstm_states,

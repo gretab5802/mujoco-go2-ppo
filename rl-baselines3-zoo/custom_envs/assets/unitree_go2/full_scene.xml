@@ -1,0 +1,4 @@
+<mujoco>
+  <include file="scene.xml"/>
+  <include file="go2.xml"/>
+</mujoco>
