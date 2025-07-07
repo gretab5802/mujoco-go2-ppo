@@ -20,7 +20,7 @@
     <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
     <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
 
-    <camera name="follow" pos="-1 0 1" xyaxes="1 0 0 0 0 1"/>
+    <camera name="follow" mode="trackcom" pos="-1.2 -0.3 0.55" xyaxes="10 -40 1 -0.1 1 0.5"/>
 
   </worldbody>
 

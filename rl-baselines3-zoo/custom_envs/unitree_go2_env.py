@@ -97,6 +97,7 @@ class UnitreeGo2Env(gym.Env):
             "velocity": self._reward_tracking_velocity(),
             "height": self._reward_height_penalty(),
             "y": self._reward_y_penalty(),
+            "head_y": self._reward_head_y_penalty(),
             "posture": self._reward_posture_penalty(),
             "torque": self._reward_torque_effort(),
             "pose_penalty": self._reward_similar_to_default(),
@@ -125,10 +126,13 @@ class UnitreeGo2Env(gym.Env):
         pitch = np.arcsin(-R[2, 0])         # around y-axis
         roll = np.arctan2(R[2, 1], R[2, 2]) # around x-axis
 
-        if np.abs(y) > 0.15:
+        # Too much side-to-side motion
+        if np.abs(y) > 0.2 or np.abs(head_pos[1]) > 0.2:
             return True
+        # Body too low or too high
         if z < 0.15 or z > 0.6:
             return True
+        # Too much body rolling/rotation
         if abs(roll) > 0.2 or abs(pitch) > 0.2:
             return True
         return False
@@ -164,12 +168,13 @@ class UnitreeGo2Env(gym.Env):
 
     def _compute_reward(self, action):
         reward = (
-            self._reward_tracking_velocity()            # body moving forward
+            2 * self._reward_tracking_velocity()        # body moving forward
             - 5 * self._reward_height_penalty()         # penalize height deviation
-            - 10 * self._reward_y_penalty()
+            - 10 * self._reward_y_penalty()             # penalize side-to-side body motion
+            - 10 * self._reward_head_y_penalty()        # penalize side-to-side head motion
             - 100 * self._reward_posture_penalty()      # penalize roll/pitch
             - 0.000001 * self._reward_torque_effort()   # penalize actuator strain
-            - 0.1 * self._reward_similar_to_default()   # penalize unnatural joint config
+            - 2 * self._reward_similar_to_default()         # penalize unnatural joint config
             + self._reward_tracking_ang_vel()           # ang velocity close to target (0.25)
             - 0.000001 * self._reward_action_rate()
             + self._reward_survival_bonus()             # survival bonus
@@ -196,6 +201,11 @@ class UnitreeGo2Env(gym.Env):
     
     def _reward_y_penalty(self):
         return (np.abs(self.data.qpos[1]))
+    
+    def _reward_head_y_penalty(self):
+        site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, "head_tracker")
+        head_pos = np.copy(self.data.site_xpos[site_id])
+        return (np.abs(head_pos[1]))
 
     def _reward_posture_penalty(self):
         quat = self.data.qpos[3:7]
@@ -229,6 +239,7 @@ class RewardLogger:
             "velocity": 0.0,
             "height": 0.0,
             "y": 0.0,
+            "head_y": 0.0,
             "posture": 0.0,
             "torque": 0.0,
             "pose_penalty": 0.0,
