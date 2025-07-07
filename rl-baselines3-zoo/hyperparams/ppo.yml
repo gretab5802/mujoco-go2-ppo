@@ -180,15 +180,15 @@ HalfCheetah-v3:
 
 UnitreeGo2-v0:
   batch_size: 64
-  clip_range: 0.1
-  ent_coef: 0.000401762
-  gae_lambda: 0.92
-  gamma: 0.98
-  learning_rate: 2.0633e-05
+  clip_range: linear_0.2
+  ent_coef: 0.01
+  gae_lambda: 0.97
+  gamma: 0.995
+  learning_rate: linear_0.0003
   max_grad_norm: 0.8
-  n_envs: 1
+  n_envs: 4
   n_epochs: 20
-  n_steps: 512
+  n_steps: 256
   n_timesteps: 1000000.0
   normalize: true
   policy: 'MlpPolicy'
@@ -197,7 +197,7 @@ UnitreeGo2-v0:
                       activation_fn=nn.ReLU,
                       net_arch=dict(pi=[256, 256], vf=[256, 256])
                       )"
-  vf_coef: 0.58096
+  vf_coef: 0.5
 
 # Tuned
 AntBulletEnv-v0:

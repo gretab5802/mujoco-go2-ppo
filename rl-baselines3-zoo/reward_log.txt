@@ -1,0 +1,10 @@
+Averages over 1000 steps:
+velocity: 0.867099
+height: 0.000458
+y: 0.014556
+posture: 0.002866
+torque: 11290.050761
+pose_penalty: 2.219112
+ang_velocity: 0.888681
+action_rate: 31042.887743
+survival bonus: 1.000000
