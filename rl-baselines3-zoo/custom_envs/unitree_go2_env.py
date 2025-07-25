@@ -84,25 +84,31 @@ class UnitreeGo2Env(gym.Env):
 
         obs = self._get_obs()
         reward = self._compute_reward(action)
-        terminated = self._check_termination(y_before, y_after, x_before, x_after)
+        terminated = self._check_termination()
         truncated = self.step_count >= self.step_limit
 
         info = {
-            "reward_tracking": reward,
             "x_position": float(self.data.qpos[0]),
-            "x_velocity": float(self.data.qvel[0])
+            "x_velocity": float(self.data.qvel[0]),
+            "rew/vel":          self._reward_tracking_velocity(),
+            "rew/survive":      self._reward_survival_bonus(),
+            "rew/height":       self._penalty_height(),
+            "rew/posture":      self._penalty_posture(),
+            "rew/hip_limit":    self._penalty_hip_duction(),
         }
 
         self.logger.update({
             "velocity": self._reward_tracking_velocity(),
-            "height": self._reward_height_penalty(),
-            "y": self._reward_y_penalty(),
-            "head_y": self._reward_head_y_penalty(),
-            "posture": self._reward_posture_penalty(),
-            "torque": self._reward_torque_effort(),
-            "pose_penalty": self._reward_similar_to_default(),
+            "height": self._penalty_height(),
+            "head_height": self._penalty_head_height(),
+            "y": self._penalty_lateral(),
+            "head_y": self._penalty_head_lateral(),
+            "posture": self._penalty_posture(),
+            "torque": self._penalty_torque_effort(),
+            "pose_penalty": self._penalty_pose_different(),
             "ang_velocity": self._reward_tracking_ang_vel(),
-            "action_rate": self._reward_action_rate(),
+            "action_rate": self._penalty_action_rate(),
+            "hip_limit": self._penalty_hip_duction(),  # penalty for hip joints folding inwards
             "survival bonus": self._reward_survival_bonus()
         })
 
@@ -113,7 +119,7 @@ class UnitreeGo2Env(gym.Env):
     def _get_obs(self):
         return np.nan_to_num(np.concatenate([self.data.qpos, self.data.qvel]), nan=0.0)
 
-    def _check_termination(self, y_before, y_after, x_before, x_after):
+    def _check_termination(self):
         site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, "head_tracker")
         head_pos = np.copy(self.data.site_xpos[site_id])
         y = self.data.qpos[1]
@@ -130,7 +136,7 @@ class UnitreeGo2Env(gym.Env):
         if np.abs(y) > 0.2 or np.abs(head_pos[1]) > 0.2:
             return True
         # Body too low or too high
-        if z < 0.15 or z > 0.6:
+        if z < 0.2 or z > 0.4:
             return True
         # Too much body rolling/rotation
         if abs(roll) > 0.2 or abs(pitch) > 0.2:
@@ -168,54 +174,85 @@ class UnitreeGo2Env(gym.Env):
 
     def _compute_reward(self, action):
         reward = (
-            2 * self._reward_tracking_velocity()        # body moving forward
-            - 5 * self._reward_height_penalty()         # penalize height deviation
-            - 10 * self._reward_y_penalty()             # penalize side-to-side body motion
-            - 10 * self._reward_head_y_penalty()        # penalize side-to-side head motion
-            - 100 * self._reward_posture_penalty()      # penalize roll/pitch
-            - 0.000001 * self._reward_torque_effort()   # penalize actuator strain
-            - 2 * self._reward_similar_to_default()         # penalize unnatural joint config
-            + self._reward_tracking_ang_vel()           # ang velocity close to target (0.25)
-            - 0.000001 * self._reward_action_rate()
-            + self._reward_survival_bonus()             # survival bonus
+            2 * self._reward_tracking_velocity()                # body moving forward
+            - self._penalty_height()                            # penalize height deviation
+            - self._penalty_head_height()                       # penalize height deviation
+            - self._penalty_lateral()                           # penalize side-to-side body motion
+            - self._penalty_head_lateral()                      # penalize side-to-side head motion
+            - 10 * self._penalty_posture()                      # posture: penalize roll/pitch/yaw
+            # - 0.000001 * self._penalty_torque_effort()        # penalize actuator strain
+            - 0.05 * self._penalty_pose_different()             # pose penalty: penalize unnatural joint config
+            + self._reward_tracking_ang_vel()                   # ang velocity close to target (0)
+            - 0.00005 * self._penalty_action_rate()             # penalize changes in actions
+            - 100 * self._penalty_hip_duction()                 # penalize hip joints folding inwards or outwards
+            + self._reward_survival_bonus()                     # survival bonus
         )
         return reward
 
-# ------------ reward functions ----------------
-
     def _reward_tracking_velocity(self):
-        target = self.command_x  # e.g. 0.5
+        target = self.command_x  # 0.5 at the moment
         current = self.data.qvel[0]
         return np.exp(-((current - target) ** 2) / self.tracking_sigma)
-    
-    # lin_vel_error = torch.sum(torch.square(self.commands[:, :2] - self.base_lin_vel[:, :2]), dim=1)
-    # return torch.exp(-lin_vel_error / self.reward_cfg["tracking_sigma"])
-    
+
     def _reward_tracking_ang_vel(self):
-        # Tracking of angular velocity commands (yaw)
         ang_vel_error = np.square(self.data.qvel[5] - self.command_yaw)
         return np.exp(-ang_vel_error / self.tracking_sigma)
 
-    def _reward_height_penalty(self):
+    def _penalty_height(self):
         return (self.data.qpos[2] - 0.27) ** 2
-    
-    def _reward_y_penalty(self):
+        
+    def _penalty_head_height(self):
+        site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, "head_tracker")
+        head_pos = np.copy(self.data.site_xpos[site_id])
+        return (head_pos[2] - 0.37) ** 2
+
+    def _penalty_lateral(self):
         return (np.abs(self.data.qpos[1]))
-    
-    def _reward_head_y_penalty(self):
+
+    def _penalty_head_lateral(self):
         site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, "head_tracker")
         head_pos = np.copy(self.data.site_xpos[site_id])
         return (np.abs(head_pos[1]))
 
-    def _reward_posture_penalty(self):
+    def _penalty_posture(self):
         quat = self.data.qpos[3:7]
         rpy = R.from_quat([quat[1], quat[2], quat[3], quat[0]]).as_euler("xyz", degrees=False)
-        return rpy[0] ** 2 + rpy[1] ** 2
+        return rpy[0] ** 2 + rpy[1] ** 2 + rpy[2] ** 2
 
-    def _reward_torque_effort(self):
+    def _penalty_torque_effort(self):
         return np.sum(np.square(self.data.ctrl))
 
-    def _reward_similar_to_default(self):
+    def _penalty_action_rate(self):
+        return np.sum(np.square(self.last_action - self.data.ctrl))
+
+    def _reward_survival_bonus(self):
+        return 1.0
+
+    def _penalty_hip_duction(self):
+        """Penalize hip joints by how far they exceed the abduction/adduction limits (summed absolute violation)."""
+        hip_joint_names = ["FL_hip_joint", "FR_hip_joint", "RL_hip_joint", "RR_hip_joint"]
+        hip_joint_indices = [self.joint_indices[name] for name in hip_joint_names]
+        hip_angles = self.data.qpos[hip_joint_indices]
+        # Positive amount by which each joint exceeds the limits
+        violation = hip_angles ** 2
+        return np.sum(violation) * 10.0  # scale factor
+
+    # def _penalty_pose_different(self):
+    #     # abduction, thigh joint, calf joint
+    #     weights = [2, 1, 1]
+    #     joint_pos = self.data.qpos[7:7 + self.model.nu]
+    #     default_joint_pos = np.array([
+    #         0, 0.9, -1.8,  # FL
+    #         0, 0.9, -1.8,  # FR
+    #         0, 0.9, -1.8,  # RL
+    #         0, 0.9, -1.8   # RR
+    #     ])
+    #     abduction = np.sum(np.abs(joint_pos[[0, 3, 6, 9]] - default_joint_pos[[0, 3, 6, 9]]))
+    #     thigh = np.sum(np.abs(joint_pos[[1, 4, 5, 10]] - default_joint_pos[[1, 4, 5, 10]]))
+    #     calf = np.sum(np.abs(joint_pos[[2, 5, 8, 11]] - default_joint_pos[[2, 5, 8, 11]]))
+    #     return np.dot(weights, [abduction, thigh, calf])
+
+    def _penalty_pose_different(self):
         joint_pos = self.data.qpos[7:7 + self.model.nu]
         default_joint_pos = np.array([
             0, 0.9, -1.8,  # FL
@@ -224,12 +261,6 @@ class UnitreeGo2Env(gym.Env):
             0, 0.9, -1.8   # RR
         ])
         return np.sum(np.abs(joint_pos - default_joint_pos))
-    
-    def _reward_action_rate(self):
-        return np.sum(np.square(self.last_action - self.data.ctrl))
-    
-    def _reward_survival_bonus(self):
-        return 1
 
 
 class RewardLogger:
@@ -238,6 +269,7 @@ class RewardLogger:
         self.totals = {
             "velocity": 0.0,
             "height": 0.0,
+            "head_height": 0.0,
             "y": 0.0,
             "head_y": 0.0,
             "posture": 0.0,
@@ -245,6 +277,7 @@ class RewardLogger:
             "pose_penalty": 0.0,
             "ang_velocity": 0.0,
             "action_rate": 0.0,
+            "hip_limit": 0.0,
             "survival bonus": 0.0
         }
 

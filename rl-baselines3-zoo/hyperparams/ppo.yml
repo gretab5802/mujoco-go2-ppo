@@ -194,10 +194,11 @@ UnitreeGo2-v0:
   policy: 'MlpPolicy'
   policy_kwargs: "dict(log_std_init=-2,
                       ortho_init=False,
-                      activation_fn=nn.ReLU,
+                      activation_fn=nn.ELU,
                       net_arch=dict(pi=[256, 256], vf=[256, 256])
                       )"
   vf_coef: 0.5
+
 
 # Tuned
 AntBulletEnv-v0:

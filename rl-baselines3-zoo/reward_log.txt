@@ -1,11 +1,15 @@
-Averages over 5000 steps:
-velocity: 0.782812
-height: 0.000242
-y: 0.030682
-head_y: 0.017189
-posture: 0.000598
-torque: 11689.576812
-pose_penalty: 0.383866
-ang_velocity: 0.941913
-action_rate: 34193.615103
+Averages over 2200 steps:
+velocity: 0.584405
+height: 0.000374
+head_height: 0.005507
+y: 0.002961
+head_y: 0.061416
+posture: 0.165088
+torque: 7039.295866
+pose_penalty: 5.322044
+ang_velocity: 0.205644
+action_rate: 453.184125
+hip_limit: 8.224007
 survival bonus: 1.000000
+
+
