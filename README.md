@@ -1,1 +1,1 @@
-# Training a Unitree Go2 Quadruped to walk forward in MuJoCo using Reinforcement Learning policy gradient algorithms (primarily PPO)
+# Training a Unitree Go2 Quadruped locomotion in MuJoCo using PPO
