@@ -3,14 +3,12 @@ Utilizing stable-baslines3 to train Unitree Go2 quadruped forward walking locomo
 
 ## Resources
 
-- **MuJoCo**  
-  – [Official site](https://mujoco.org/)  
-- **Stable-Baselines3 & RL-Zoo3**  
-  – [Stable-Baselines3 GitHub](https://github.com/DLR-RM/stable-baselines3)  
-  – [RL-Zoo3 GitHub](https://github.com/DLR-RM/rl-zoo3)  
-- **Unitree Go2 ROS 2 Drivers**  
-  – [go2_control_interface](https://github.com/inria-paris-robotics-lab/go2_control_interface)  
-  – [unitree_ros2](https://github.com/unitreerobotics/unitree_ros2)  
+- [MuJoCo official site](https://mujoco.org/)  
+- [Stable-Baselines3 GitHub](https://github.com/DLR-RM/stable-baselines3)  
+- [RL-Zoo3 GitHub](https://github.com/DLR-RM/rl-zoo3)
+Helpful repositories, used for reward shaping ideas:
+- [Genesis simulation with a Go2 (GitHub for their Go2 environment)](https://github.com/Genesis-Embodied-AI/Genesis/blob/main/examples/locomotion/go2_env.py)
+- [Training Quadruped Locomotion using Reinforcement Learning in Mujoco (GitHub for training Go1 in MuJoCo)](https://github.com/nimazareian/quadruped-rl-locomotion/tree/main)
 
 ## Prerequisites
 
@@ -18,17 +16,17 @@ Utilizing stable-baslines3 to train Unitree Go2 quadruped forward walking locomo
 - Docker is optional, but since that is what I used (local machine has Ubuntu 24.04, used Docker for Ubuntu 20.04 workspace), some things in here will be particular to that. This tutorial does not go through installing Docker on Ubuntu. If you do not have it already, [see this for installing it on Ubuntu 22.04 or 24.04](https://docs.docker.com/engine/install/ubuntu/)
   
 ## Highlights of repository:
-`rl-baselines3-zoo/custom_envs` contains all things particular to Go2, including go2.xml which gives us the go2 information and scene.xml which loads in the go2 already, as well as a checkered floor, located in `rl-baselines3-zoo/custom_envs/assets/unitree_go2` <br />
-`rl-baselines3-zoo/hyperparams/` contains all hyperparameter files for each algorithm, `ppo.yml` and `sac.yml` have a UnitreeGo2-v0 env which I added and registered in `rl-baselines3-zoo/rl_zoo3/import_envs.py`. The Unitree environment is defined in `rl-baselines3-zoo/custom_envs/unitree_go2_env.py` <br />
+`rl-baselines3-zoo/custom_envs` contains all things particular to Go2, including go2.xml which gives us the go2 information and scene.xml which loads in the go2 already, as well as a checkered floor, located in `rl-baselines3-zoo/custom_envs/assets/unitree_go2` <br /><br />
+`rl-baselines3-zoo/hyperparams/` contains all hyperparameter files for each algorithm, `ppo.yml` and `sac.yml` have a UnitreeGo2-v0 env which I added and registered in `rl-baselines3-zoo/rl_zoo3/import_envs.py`. The Unitree environment is defined in `rl-baselines3-zoo/custom_envs/unitree_go2_env.py` <br /><br />
 `rl-baselines3-zoo/custom_envs/unitree_go2_env.py` is the most  important file, it contains all of the reward shaping <br />
 
-# To train and visualize
+## To train and visualize
 Cd into the rl-baselines3-zoo repository
 ```
 cd rl-baselines3-zoo/
 ```
-To train, there are a lot of flags you can utilize, but these are the ones I stuck with. You can specify things like number of environments in the command to run training, but I already defined this in the yml hyperparameter files for PPO and SAC. <br />
-In general, the structure is: python train.py --algo \[ALGORITHM] --env \[ENVIRONMENT] -f \[FOLDER TO STORE TRAINED POLICY] <br />
+To train, there are a lot of flags you can utilize, but these are the ones I stuck with. You can specify things like number of environments in the command to run training, but I already defined this in the yml hyperparameter files for PPO and SAC. <br /><br />
+In general, the structure is: python train.py --algo \[ALGORITHM] --env \[ENVIRONMENT] -f \[FOLDER TO STORE TRAINED POLICY] <br /><br />
 This is what mine usually looked like:
 ```
 python train.py --algo ppo --env UnitreeGo2-v0 -f logs/
