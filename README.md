@@ -6,7 +6,7 @@ Utilizing stable-baslines3 to train Unitree Go2 quadruped forward walking locomo
 - [MuJoCo official site](https://mujoco.org/)  
 - [Stable-Baselines3 GitHub](https://github.com/DLR-RM/stable-baselines3)  
 - [RL-Zoo3 GitHub](https://github.com/DLR-RM/rl-zoo3)
-Helpful repositories, used for reward shaping ideas:
+### Helpful repositories, used for reward shaping ideas:
 - [Genesis simulation with a Go2 (GitHub for their Go2 environment)](https://github.com/Genesis-Embodied-AI/Genesis/blob/main/examples/locomotion/go2_env.py)
 - [Training Quadruped Locomotion using Reinforcement Learning in Mujoco (GitHub for training Go1 in MuJoCo)](https://github.com/nimazareian/quadruped-rl-locomotion/tree/main)
 
@@ -26,7 +26,7 @@ Cd into the rl-baselines3-zoo repository
 cd rl-baselines3-zoo/
 ```
 To train, there are a lot of flags you can utilize, but these are the ones I stuck with. You can specify things like number of environments in the command to run training, but I already defined this in the yml hyperparameter files for PPO and SAC. <br /><br />
-In general, the structure is: python train.py --algo \[ALGORITHM] --env \[ENVIRONMENT] -f \[FOLDER TO STORE TRAINED POLICY] <br /><br />
+In general, the structure is: **python train.py --algo \[ALGORITHM] --env \[ENVIRONMENT] -f \[FOLDER TO STORE TRAINED POLICY] <br /><br />**
 This is what mine usually looked like:
 ```
 python train.py --algo ppo --env UnitreeGo2-v0 -f logs/
