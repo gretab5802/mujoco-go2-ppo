@@ -35,3 +35,4 @@ To visualize, it's the same command but you train `train.py` to `enjoy.py`:
 ```
 python enjoy.py --algo ppo --env UnitreeGo2-v0 -f logs/
 ```
+Note: -f logs/ will make it save automatically to logs/\[ALGO NAME], e.g. logs/ppo. For organization, I sometimes customized it to -f vel_survive/ to save the logs when I was only rewarding forward velocity and a survival bonus, all the way up to folders like vel_survive_drift_ang_pose ... and so on. It made for very long file names but it made it easier for data analysis/comparison and future ablation studies with the reward terms.
