@@ -1,5 +1,5 @@
-# Unitree Go2 Locomotion in MuJoCo with PPO
-Utilizing stable-baslines3 PPO to train Unitree Go2 quadruped forward walking locomotion in MuJoCo simulation. This was ran in a Docker container for Ubuntu 20.04 for compatability with ROS2 Foxy since that was the version of ROS2 on our real Go2 to prepare for future work. **This respository does not work with real robots at all, only training in simulation.**
+# Training Unitree Go2 Locomotion in MuJoCo Simulation with PPO
+Utilizing Stable-Baselines3 PPO to train Unitree Go2 quadruped forward walking locomotion in MuJoCo simulation. This was ran in a Docker container for Ubuntu 20.04 for compatability with ROS2 Foxy since that was the version of ROS2 on our real Go2 to prepare for future work. **This respository does not work with real robots at all, only training in simulation.**
 
 ## Resources
 
