@@ -1,5 +1,5 @@
 # Training a Unitree Go2 Quadruped locomotion in MuJoCo using PPO
-Utilizing stable-baslines3 to train Unitree Go2 quadruped forward walking locomotion in MuJoCo simulation. This was ran in a Docker container for Ubuntu 20.04 for compatability with ROS2 Foxy since that was the version of ROS2 on our real Go2 to prepare for future work. **This respository does not work with real robots at all, only training in simulation.**
+Utilizing stable-baslines3 PPO to train Unitree Go2 quadruped forward walking locomotion in MuJoCo simulation. This was ran in a Docker container for Ubuntu 20.04 for compatability with ROS2 Foxy since that was the version of ROS2 on our real Go2 to prepare for future work. **This respository does not work with real robots at all, only training in simulation.** Some SAC was also ran, but PPO was the primary focus.
 
 ## Resources
 
@@ -17,8 +17,8 @@ Utilizing stable-baslines3 to train Unitree Go2 quadruped forward walking locomo
   
 ## Highlights of repository:
 `rl-baselines3-zoo/custom_envs` contains all things particular to Go2, including go2.xml which gives us the go2 information and scene.xml which loads in the go2 already, as well as a checkered floor, located in `rl-baselines3-zoo/custom_envs/assets/unitree_go2` <br /><br />
-`rl-baselines3-zoo/hyperparams/` contains all hyperparameter files for each algorithm, `ppo.yml` and `sac.yml` have a UnitreeGo2-v0 env which I added and registered in `rl-baselines3-zoo/rl_zoo3/import_envs.py`. The Unitree environment is defined in `rl-baselines3-zoo/custom_envs/unitree_go2_env.py` <br /><br />
-`rl-baselines3-zoo/custom_envs/unitree_go2_env.py` is the most  important file, it contains all of the reward shaping <br />
+`rl-baselines3-zoo/hyperparams/` contains all hyperparameter files for each algorithm, `ppo.yml` and `sac.yml` have a UnitreeGo2-v0 env which I added and registered in `rl-baselines3-zoo/rl_zoo3/import_envs.py`. The Unitree environment is defined in `rl-baselines3-zoo/custom_envs/unitree_go2_env.py`. **If you want to use a different algorithm or have a different custom environment, you must add hyperparameters to the relevant yml files in this folder** <br /><br />
+`rl-baselines3-zoo/custom_envs/unitree_go2_env.py` is the most important file, it contains all of the reward shaping. **If you want to edit the rewards, edit this file. If you want to create your own environment, create a new file and register it in the import_envs.py file described above** <br />
 
 ## To train and visualize
 Cd into the rl-baselines3-zoo repository
